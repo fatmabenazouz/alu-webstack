@@ -1,0 +1,18 @@
+frontend www-http
+    bind *:80
+    mode http
+    default_backend web-backend
+frontend www-https
+    bind *:443 ssl crt /etc/haproxy/fatmabenazouz.tech.pem
+    http-request set-header X-Forwarded-Proto https
+    acl letsencrypt-acl path_beg /.well-known/acme-challenge/
+    use_backend letsencrypt-backend if letsencrypt-acl
+    default_backend web-backend
+
+backend web-backend
+    redirect scheme https unless { ssl_fc }
+    balance roundrobin
+    server 5706-web-01 54.196.208.205:80 check
+    server 5706-web-02 34.234.87.249:80 check
+backend letsencrypt-backend
+   server letsencrypt 54.167.82.63:5706
